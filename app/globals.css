@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #fffdf8;
+  --cream: #fde8c4;
+  --peach: #f6d9a8;
+  --ink: #2a1a12;
+  --ink-light: #4d372b;
+  --ink-muted: #735848;
+  --caramel: #a14a1c;
+  --caramel-dark: #6f2f10;
+  --whatsapp: #1f7a4d;
+  --whatsapp-dark: #124d30;
+}
+
+@layer base {
+  html {
+    background-color: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-figtree), sans-serif;
+    font-size: 18px; /* 1.125rem body baseline */
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--bg);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-fraunces), serif;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    font-weight: 800;
+  }
+
+  /* Focus visible accessibility styling */
+  :focus-visible {
+    outline: 3px solid var(--caramel);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+/* Chunky button utility classes */
+.btn-chunky-caramel {
+  background-color: var(--caramel);
+  color: #ffffff;
+  box-shadow: 0 5px 0 0 var(--caramel-dark);
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.btn-chunky-caramel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 0 var(--caramel-dark);
+}
+.btn-chunky-caramel:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 0 var(--caramel-dark);
+}
+
+.btn-chunky-secondary {
+  background-color: transparent;
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 0 5px 0 0 var(--ink);
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.btn-chunky-secondary:hover {
+  background-color: rgba(42, 26, 18, 0.04);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 0 var(--ink);
+}
+.btn-chunky-secondary:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 0 var(--ink);
+}
+
+.btn-chunky-whatsapp {
+  background-color: var(--whatsapp);
+  color: #ffffff;
+  box-shadow: 0 5px 0 0 var(--whatsapp-dark);
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.btn-chunky-whatsapp:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 0 var(--whatsapp-dark);
+}
+.btn-chunky-whatsapp:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 0 var(--whatsapp-dark);
+}
+
+/* Argyle pattern strip beneath scallops */
+.bg-argyle-strip {
+  background-color: var(--cream);
+  background-image: 
+    linear-gradient(135deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%), 
+    linear-gradient(225deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%), 
+    linear-gradient(45deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%), 
+    linear-gradient(315deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%);
+  background-position: 12px 0, 12px 0, 0 0, 0 0;
+  background-size: 24px 24px;
+  background-repeat: repeat;
+}
+
+/* Faint paw print pattern background */
+.bg-paws-subtle {
+  background-image: radial-gradient(#2a1a12 0.75px, transparent 0.75px), radial-gradient(#a14a1c 0.75px, #fffdf8 0.75px);
+  background-size: 48px 48px;
+  background-position: 0 0, 24px 24px;
+  opacity: 0.85;
+}
+
+/* Arch doorway photo frame */
+.arch-frame {
+  border-radius: 9999px 9999px 16px 16px;
+  border: 2px solid var(--ink);
+  overflow: hidden;
+  box-shadow: 0 8px 24px -4px rgba(42, 26, 18, 0.15);
+  background-color: #f7ede2;
+}
+
+/* Reduced motion overrides */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
