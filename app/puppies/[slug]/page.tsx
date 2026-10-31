@@ -244,3 +244,4 @@ export default function PuppyDetailPage({ params }: PageProps) {
     </div>
   );
 }
+

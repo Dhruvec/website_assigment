@@ -152,3 +152,4 @@ export function PuppyCard({ puppy, isGoneHome = false, priority = false }: Puppy
     </motion.div>
   );
 }
+

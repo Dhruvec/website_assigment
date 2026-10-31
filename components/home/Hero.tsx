@@ -154,51 +154,69 @@ export function Hero() {
 
         {/* Bottom-aligned Row of Arched Frames Peeking Over Scalloped Edge */}
         <div className="relative pt-6 max-w-6xl mx-auto">
-          {/* Centered Mascot Sitting atop/in the center of the Arches */}
-          <div className="absolute -top-12 sm:-top-16 left-1/2 -translate-x-1/2 z-20">
-            <Mascot pose="peek" className="w-28 h-24 sm:w-36 sm:h-32" />
-          </div>
-
-          {/* Arches Row */}
+          {/* Arches Row – the center slot is reserved for the roaming mascot */}
           <div className="flex items-end justify-center gap-2.5 sm:gap-4 md:gap-5 px-2">
             {HERO_ARCHES.map((arch, index) => {
               // Hide some arches on smaller screens
               const visibilityClass = arch.mobileVisible ? 'flex' : 'hidden sm:flex';
 
+              // Insert the mascot slot right before the middle arch (index 3)
+              const isMiddle = index === 3;
+
               return (
-                <motion.div
-                  key={index}
-                  initial={{ y: 80, opacity: 0, scale: 0.9 }}
-                  animate={{ y: 0, opacity: 1, scale: 1 }}
-                  transition={{
-                    type: 'spring',
-                    stiffness: 260,
-                    damping: 24,
-                    delay: 0.85 + index * 0.08,
-                  }}
-                  className={`relative flex-1 max-w-[150px] sm:max-w-[170px] lg:max-w-[190px] ${arch.heightClass} ${visibilityClass} arch-frame`}
-                >
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={arch.src}
-                      alt={arch.alt}
-                      fill
-                      priority={index === 1 || index === 3}
-                      sizes="(max-width: 640px) 25vw, (max-width: 1024px) 16vw, 180px"
-                      className="object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                  </div>
-                </motion.div>
+                <React.Fragment key={index}>
+                  {isMiddle && (
+                    <>
+                      {/* Mascot slot – empty on desktop (ScrollPup aligns here),
+                          shows a static peeking mascot on mobile */}
+                      <div
+                        id="pup-slot"
+                        className="relative flex-shrink-0 w-[120px] sm:w-[150px] h-[120px] flex items-end justify-center z-20"
+                        aria-hidden="true"
+                      >
+                        {/* Mobile-only: static peeking mascot inside the slot */}
+                        <div className="block md:hidden">
+                          <Mascot pose="peek" className="w-28 h-24" />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <motion.div
+                    initial={{ y: 80, opacity: 0, scale: 0.9 }}
+                    animate={{ y: 0, opacity: 1, scale: 1 }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 260,
+                      damping: 24,
+                      delay: 0.85 + index * 0.08,
+                    }}
+                    className={`relative flex-1 max-w-[150px] sm:max-w-[170px] lg:max-w-[190px] ${arch.heightClass} ${visibilityClass} arch-frame`}
+                  >
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={arch.src}
+                        alt={arch.alt}
+                        fill
+                        priority={index === 1 || index === 3}
+                        sizes="(max-width: 640px) 25vw, (max-width: 1024px) 16vw, 180px"
+                        className="object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </div>
+                  </motion.div>
+                </React.Fragment>
               );
             })}
           </div>
         </div>
       </div>
 
-      {/* Scalloped Divider Beneath Hero with Argyle Strip */}
-      <div className="w-full -mt-2 sm:-mt-4 relative z-20">
+      {/* Scalloped Divider Beneath Hero with Argyle Strip – z-30 so the
+           roaming mascot (z-20) hides behind it at scroll 0 */}
+      <div className="w-full -mt-2 sm:-mt-4 relative z-30">
         <Scallop position="bottom" fillColor="#fde8c4" showArgyle={true} />
       </div>
     </section>
   );
 }
+

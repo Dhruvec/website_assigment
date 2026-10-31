@@ -175,3 +175,4 @@ This repository is optimized for one-click deployment on [Vercel](https://vercel
 4. Build Command: `next build`
 5. Output Directory: `.next`
 6. Deploy!
+

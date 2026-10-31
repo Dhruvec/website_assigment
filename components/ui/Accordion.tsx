@@ -92,3 +92,4 @@ export function Accordion({ items, allowMultiple = false, className = '' }: Acco
     </div>
   );
 }
+

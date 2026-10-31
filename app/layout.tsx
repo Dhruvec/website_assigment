@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Fraunces, Figtree, Caveat } from 'next/font/google';
 import './globals.css';
 import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
+import ScrollPup from '@/components/ScrollPup';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { SITE_CONFIG } from '@/lib/site-config';
@@ -99,6 +100,7 @@ export default function RootLayout({
             <Footer />
           </div>
         </SmoothScrollProvider>
+          <ScrollPup />
       </body>
     </html>
   );

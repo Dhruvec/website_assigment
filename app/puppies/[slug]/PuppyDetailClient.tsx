@@ -141,3 +141,4 @@ export function PuppyDetailClient({ puppy }: { puppy: Puppy }) {
     </div>
   );
 }
+

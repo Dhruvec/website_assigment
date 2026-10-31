@@ -21,3 +21,4 @@ export function getWhatsAppLink(message?: string): string {
   if (!message) return base;
   return `${base}?text=${encodeURIComponent(message)}`;
 }
+

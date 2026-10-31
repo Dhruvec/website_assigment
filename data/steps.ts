@@ -36,3 +36,4 @@ export const JOURNEY_STEPS: JourneyStep[] = [
     highlight: 'VIP Doorstep Handover across UAE & GCC',
   },
 ];
+
