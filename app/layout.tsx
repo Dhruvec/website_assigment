@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Fraunces, Figtree, Caveat } from 'next/font/google';
 import './globals.css';
 import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 import { SITE_CONFIG } from '@/lib/site-config';
 
 const fraunces = Fraunces({
@@ -89,7 +91,13 @@ export default function RootLayout({
         </a>
 
         <SmoothScrollProvider>
-          {children}
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main id="main-content" className="flex-1">
+              {children}
+            </main>
+            <Footer />
+          </div>
         </SmoothScrollProvider>
       </body>
     </html>
