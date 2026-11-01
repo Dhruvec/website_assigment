@@ -2,194 +2,282 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { MessageCircle, Phone, Mail, MapPin, Instagram, Heart, Clock } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 import { SITE_CONFIG, getWhatsAppLink } from '@/lib/site-config';
 import { Scallop } from '@/components/ui/Scallop';
-import { Mascot } from '@/components/ui/Mascot';
+import { BasketBack, BasketFront } from '@/components/ui/Basket';
+import { Mascot, MascotPeek } from '@/components/ui/Mascot';
+
+const STARS = [
+  { top: '14%', left: '8%', size: 14, delay: '0s' },
+  { top: '28%', left: '19%', size: 10, delay: '1.2s' },
+  { top: '12%', left: '33%', size: 15, delay: '2.4s' },
+  { top: '38%', left: '44%', size: 11, delay: '0.6s' },
+  { top: '16%', left: '55%', size: 13, delay: '1.8s' },
+  { top: '26%', left: '67%', size: 14, delay: '3.0s' },
+  { top: '44%', left: '77%', size: 9, delay: '0.9s' },
+  { top: '18%', left: '84%', size: 15, delay: '2.1s' },
+  { top: '36%', left: '93%', size: 12, delay: '1.5s' },
+  { top: '10%', left: '62%', size: 11, delay: '2.7s' },
+];
 
 export function Footer() {
+  const pathname = usePathname();
+  const isHome = pathname === '/';
+
   return (
     <>
-      <footer className="relative bg-[#fde8c4] text-ink pt-12 pb-24 md:pb-14 border-t border-caramel/20 overflow-hidden">
-        {/* Scallop Divider at top of footer */}
-        <div className="absolute top-0 left-0 right-0 -translate-y-full">
-          <Scallop position="top" fillColor="#fde8c4" showArgyle={true} />
+      {/* Scallop transition from cream page into dark night footer */}
+      <div className="w-full relative pointer-events-none -mb-[1px]">
+        <Scallop position="top" fillColor="#241309" showArgyle={false} />
+      </div>
+
+      {/* Footer element: NO transform, z-index, isolation or overflow-hidden */}
+      <footer className="relative bg-[#241309] text-[#fde8c4] pt-10 sm:pt-16 pb-24 md:pb-16">
+        {/* Sky layer: absolute inset-0 pointer-events-none overflow-hidden (clipping on this layer only) */}
+        <div
+          className="absolute inset-0 pointer-events-none overflow-hidden"
+          aria-hidden="true"
+        >
+          {/* ~10 Twinkling 4-point stars with CSS clip-path & 3.2s staggered delay */}
+          {STARS.map((star, i) => (
+            <div
+              key={i}
+              className="absolute bg-[#f0b45a] motion-reduce:animate-none"
+              style={{
+                top: star.top,
+                left: star.left,
+                width: `${star.size}px`,
+                height: `${star.size}px`,
+                clipPath:
+                  'polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%)',
+                animation: 'starTwinkle 3.2s ease-in-out infinite',
+                animationDelay: star.delay,
+              }}
+            />
+          ))}
+
+          {/* Crescent moon top-right with soft glow and 8s float */}
+          <div
+            className="absolute top-6 sm:top-10 right-6 sm:right-14 w-12 h-12 sm:w-16 sm:h-16 motion-reduce:animate-none pointer-events-none"
+            style={{
+              animation: 'moonFloat 8s ease-in-out infinite',
+              filter:
+                'drop-shadow(0 0 16px rgba(240, 180, 90, 0.45)) drop-shadow(0 0 32px rgba(240, 180, 90, 0.2))',
+            }}
+          >
+            <svg
+              viewBox="0 0 60 60"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-full h-full"
+            >
+              <path
+                d="M 30 6 C 43.25 6 54 16.75 54 30 C 54 43.25 43.25 54 30 54 C 23.5 54 17.5 51.5 13 47.3 C 24 47.3 33 38.3 33 27.3 C 33 18.2 26.5 10.7 18 8.4 C 21.7 6.9 25.7 6 30 6 Z"
+                fill="#fde8c4"
+              />
+            </svg>
+          </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-caramel/25">
-            {/* Column 1: Brand & Blurb (5 cols) */}
-            <div className="lg:col-span-5 flex flex-col items-start">
-              <Link href="/" className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-white border-2 border-caramel flex items-center justify-center p-1 shadow-sm">
-                  <Mascot pose="idle" animated={false} className="w-full h-full" />
-                </div>
-                <div>
-                  <span className="font-display font-black text-2xl text-ink tracking-tight block">
-                    {SITE_CONFIG.name}
-                  </span>
-                  <span className="font-accent text-base text-caramel font-semibold">
-                    {SITE_CONFIG.tagline}
-                  </span>
-                </div>
-              </Link>
-              <p className="text-ink/80 text-sm leading-relaxed max-w-md mb-6">
-                Dubai’s premier teacup and toy dog boutique. We partner exclusively with ethical,
-                world-champion pedigree breeders across Europe and South Korea to bring loving,
-                healthy, and vet-certified puppies safely into their forever homes.
+        {/* 3-Column Content Layout (md) */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-14 pb-12">
+            {/* Column 1: Left (md:col-span-5) */}
+            <div className="md:col-span-5 flex flex-col items-start">
+              <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-[#fde8c4] tracking-tight leading-tight">
+                Welcome home.
+              </h2>
+              <p className="text-[#fde8c4]/80 text-sm sm:text-base leading-relaxed mt-4 max-w-sm font-normal">
+                {SITE_CONFIG.name} is Dubai’s premier boutique for healthy,
+                ethically raised teacup and toy puppies from world-renowned
+                champion pedigrees.
               </p>
-              {/* Handwritten Tagline with cute heart */}
-              <div className="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full border border-caramel/20">
-                <Heart className="w-4 h-4 fill-caramel text-caramel" />
-                <span className="font-accent text-lg text-caramel-dark font-bold">
-                  “every puppy is family”
-                </span>
+
+              {/* Basket Container: wraps empty #pup-basket target (260x190) */}
+              <div className="relative w-[260px] h-[190px] mt-8 select-none">
+                {/* Empty target for ScrollPup live rect measurement */}
+                <div
+                  id="pup-basket"
+                  className="absolute inset-0 w-[260px] h-[190px] pointer-events-none"
+                />
+
+                {/* Basket Back at z-10 (behind mascot) */}
+                <div className="absolute inset-0 z-10 pointer-events-none">
+                  <BasketBack />
+                </div>
+
+                {/* On routes other than "/", render static, tail-wagging MascotPeek inside basket */}
+                {!isHome ? (
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-[72px] z-20 pointer-events-none">
+                    <MascotPeek className="w-[150px] h-auto" />
+                  </div>
+                ) : (
+                  /* On "/", mobile & reduced motion static peek dog (since roaming dog is md:block only) */
+                  <div className="absolute left-1/2 -translate-x-1/2 bottom-[72px] z-20 pointer-events-none md:hidden motion-reduce:block">
+                    <MascotPeek className="w-[150px] h-auto" />
+                  </div>
+                )}
+
+                {/* Basket Front at z-30 (paints over the dog's body at z-20) */}
+                <div className="absolute inset-0 z-30 pointer-events-none">
+                  <BasketFront />
+                </div>
               </div>
             </div>
 
-            {/* Column 2: Explore Links (3 cols) */}
-            <div className="lg:col-span-3">
-              <h3 className="font-display font-bold text-lg text-ink mb-4 flex items-center gap-2">
-                <span>Explore</span>
-                <span className="w-8 h-0.5 bg-caramel rounded-full" />
+            {/* Column 2: Middle - Explore (md:col-span-3) */}
+            <div className="md:col-span-3">
+              <h3 className="font-accent text-3xl sm:text-4xl text-[#f0b45a] font-bold mb-5 tracking-wide">
+                Explore
               </h3>
-              <ul className="space-y-2.5 text-sm font-medium">
+              <ul className="space-y-3 text-sm sm:text-base font-medium">
                 <li>
-                  <Link href="/puppies" className="hover:text-caramel transition-colors flex items-center gap-1.5">
-                    <span>Available Puppies</span>
+                  <Link
+                    href="/puppies"
+                    className="text-[#fde8c4]/85 hover:text-[#f0b45a] transition-colors"
+                  >
+                    Available puppies
                   </Link>
                 </li>
                 <li>
-                  <Link href="/puppies?origin=local" className="hover:text-caramel transition-colors flex items-center gap-1.5">
-                    <span>In Our Showroom</span>
+                  <Link
+                    href="/gone-home"
+                    className="text-[#fde8c4]/85 hover:text-[#f0b45a] transition-colors"
+                  >
+                    Gone home
                   </Link>
                 </li>
                 <li>
-                  <Link href="/puppies?origin=imported" className="hover:text-caramel transition-colors flex items-center gap-1.5">
-                    <span>Imported For You</span>
+                  <Link
+                    href="/happy-families"
+                    className="text-[#fde8c4]/85 hover:text-[#f0b45a] transition-colors"
+                  >
+                    Happy families
                   </Link>
                 </li>
                 <li>
-                  <Link href="/happy-families" className="hover:text-caramel transition-colors flex items-center gap-1.5">
-                    <span>Happy Families Gallery</span>
+                  <Link
+                    href="/how-it-works"
+                    className="text-[#fde8c4]/85 hover:text-[#f0b45a] transition-colors"
+                  >
+                    How it works
                   </Link>
                 </li>
                 <li>
-                  <Link href="/how-it-works" className="hover:text-caramel transition-colors flex items-center gap-1.5">
-                    <span>How It Works & Delivery</span>
+                  <Link
+                    href="/how-it-works"
+                    className="text-[#fde8c4]/85 hover:text-[#f0b45a] transition-colors"
+                  >
+                    Delivery & collection
                   </Link>
                 </li>
                 <li>
-                  <Link href="/faq" className="hover:text-caramel transition-colors flex items-center gap-1.5">
-                    <span>Frequently Asked Questions</span>
+                  <Link
+                    href="/faq"
+                    className="text-[#fde8c4]/85 hover:text-[#f0b45a] transition-colors"
+                  >
+                    FAQ
                   </Link>
                 </li>
                 <li>
-                  <Link href="/gone-home" className="hover:text-caramel transition-colors flex items-center gap-1.5">
-                    <span>Puppies Gone Home</span>
+                  <Link
+                    href="/contact"
+                    className="text-[#fde8c4]/85 hover:text-[#f0b45a] transition-colors"
+                  >
+                    Visit & contact
                   </Link>
                 </li>
               </ul>
             </div>
 
-            {/* Column 3: Say Hello (4 cols) */}
-            <div className="lg:col-span-4">
-              <h3 className="font-display font-bold text-lg text-ink mb-4 flex items-center gap-2">
-                <span>Say Hello</span>
-                <span className="w-8 h-0.5 bg-caramel rounded-full" />
+            {/* Column 3: Right - Say hello (md:col-span-4) */}
+            <div className="md:col-span-4">
+              <h3 className="font-accent text-3xl sm:text-4xl text-[#f0b45a] font-bold mb-5 tracking-wide">
+                Say hello
               </h3>
-              <ul className="space-y-3.5 text-sm">
-                <li className="flex items-start gap-3">
-                  <MapPin className="w-5 h-5 text-caramel shrink-0 mt-0.5" />
-                  <span className="text-ink/85">{SITE_CONFIG.address}</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-caramel shrink-0" />
-                  <span className="text-ink/85">{SITE_CONFIG.openingHours}</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <MessageCircle className="w-5 h-5 text-whatsapp shrink-0" />
+              <div className="space-y-3.5 text-sm sm:text-base">
+                <div>
                   <a
                     href={getWhatsAppLink()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-ink font-semibold hover:text-whatsapp transition-colors underline decoration-whatsapp/30"
+                    className="text-[#fde8c4]/90 hover:text-[#f0b45a] transition-colors font-medium"
                   >
-                    WhatsApp: {SITE_CONFIG.phone}
+                    WhatsApp {SITE_CONFIG.phone}
                   </a>
-                </li>
-                <li className="flex items-center gap-3">
-                  <Mail className="w-5 h-5 text-caramel shrink-0" />
+                </div>
+                <div>
                   <a
                     href={`mailto:${SITE_CONFIG.email}`}
-                    className="text-ink hover:text-caramel transition-colors"
+                    className="text-[#fde8c4]/90 hover:text-[#f0b45a] transition-colors"
                   >
                     {SITE_CONFIG.email}
                   </a>
-                </li>
-              </ul>
+                </div>
+                <div className="text-[#fde8c4]/80 leading-relaxed max-w-xs">
+                  {SITE_CONFIG.address}
+                </div>
 
-              {/* Social Icons */}
-              <div className="flex items-center gap-3 mt-6">
-                <a
-                  href={SITE_CONFIG.socials.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-white border border-caramel/30 flex items-center justify-center text-caramel hover:bg-caramel hover:text-white transition-all shadow-sm"
-                  aria-label="Follow us on Instagram"
-                >
-                  <Instagram className="w-5 h-5" />
-                </a>
-                <a
-                  href={getWhatsAppLink()}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 rounded-full bg-white border border-whatsapp/30 flex items-center justify-center text-whatsapp hover:bg-whatsapp hover:text-white transition-all shadow-sm"
-                  aria-label="Chat on WhatsApp"
-                >
-                  <MessageCircle className="w-5 h-5" />
-                </a>
-                <a
-                  href={`tel:${SITE_CONFIG.phoneDigits}`}
-                  className="w-10 h-10 rounded-full bg-white border border-caramel/30 flex items-center justify-center text-caramel hover:bg-caramel hover:text-white transition-all shadow-sm"
-                  aria-label="Call concierge"
-                >
-                  <Phone className="w-5 h-5" />
-                </a>
+                {/* Social Pill Buttons (2px cream outline, rounded-full) */}
+                <div className="flex flex-wrap items-center gap-2.5 pt-4">
+                  <a
+                    href={SITE_CONFIG.socials.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border-2 border-[#fde8c4] rounded-full px-4 py-1.5 text-xs font-bold text-[#fde8c4] hover:bg-[#fde8c4] hover:text-[#241309] transition-all"
+                  >
+                    Instagram
+                  </a>
+                  <a
+                    href={SITE_CONFIG.socials.tiktok}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border-2 border-[#fde8c4] rounded-full px-4 py-1.5 text-xs font-bold text-[#fde8c4] hover:bg-[#fde8c4] hover:text-[#241309] transition-all"
+                  >
+                    TikTok
+                  </a>
+                  <a
+                    href="https://facebook.com/petitepaws"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="border-2 border-[#fde8c4] rounded-full px-4 py-1.5 text-xs font-bold text-[#fde8c4] hover:bg-[#fde8c4] hover:text-[#241309] transition-all"
+                  >
+                    Facebook
+                  </a>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Bottom Copyright & Disclaimer */}
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-ink/70 gap-4 text-center sm:text-left">
+          {/* Bottom Copyright & City Line */}
+          <div className="pt-8 border-t border-[#fde8c4]/15 flex flex-col sm:flex-row items-center justify-between text-xs text-[#fde8c4]/60 gap-4 text-center sm:text-left">
             <p>
-              © {new Date().getFullYear()} {SITE_CONFIG.name}. All rights reserved. Demo sample data for technical evaluation.
+              © {new Date().getFullYear()} {SITE_CONFIG.name}. All rights reserved.
             </p>
-            <p className="flex items-center justify-center gap-1 font-medium">
-              <span>Licensed luxury pet concierge in {SITE_CONFIG.city}, UAE</span>
+            <p className="font-medium">
+              Every puppy is family. Licensed luxury pet boutique in {SITE_CONFIG.city}, UAE.
             </p>
           </div>
         </div>
       </footer>
 
       {/* Floating Bottom Bar for Mobile (WhatsApp + Call) */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 p-3 bg-bg/95 backdrop-blur-md border-t border-caramel/20 md:hidden flex items-center gap-2.5 shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-40 p-3 bg-[#241309]/95 backdrop-blur-md border-t border-[#fde8c4]/20 md:hidden flex items-center gap-2.5 shadow-lg">
         <a
           href={getWhatsAppLink('Hi! I am enquiring via your website.')}
           target="_blank"
           rel="noopener noreferrer"
           className="flex-1 h-12 rounded-full bg-whatsapp text-white font-bold text-sm flex items-center justify-center gap-2 shadow-chunky-whatsapp active:translate-y-0.5 transition-all"
         >
-          <MessageCircle className="w-4 h-4" />
           <span>WhatsApp Concierge</span>
         </a>
 
         <a
           href={`tel:${SITE_CONFIG.phoneDigits}`}
-          className="h-12 px-4 rounded-full border-2 border-ink bg-white text-ink font-bold text-sm flex items-center justify-center gap-1.5 shadow-sm active:translate-y-0.5 transition-all"
+          className="h-12 px-5 rounded-full border-2 border-[#fde8c4] bg-[#241309] text-[#fde8c4] font-bold text-sm flex items-center justify-center gap-1.5 active:translate-y-0.5 transition-all"
           aria-label="Call Concierge"
         >
-          <Phone className="w-4 h-4 text-caramel" />
           <span>Call</span>
         </a>
       </div>
@@ -197,3 +285,4 @@ export function Footer() {
   );
 }
 
+export default Footer;

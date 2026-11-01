@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Fraunces, Figtree, Caveat } from 'next/font/google';
 import './globals.css';
-import { SmoothScrollProvider } from '@/components/providers/SmoothScrollProvider';
 import ScrollPup from '@/components/ScrollPup';
+import PawTrail from '@/components/PawTrail';
+import SmoothScroll from '@/components/SmoothScroll';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { SITE_CONFIG } from '@/lib/site-config';
@@ -80,9 +81,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${figtree.variable} ${caveat.variable} scroll-smooth selection:bg-peach selection:text-ink`}
+      className={`${fraunces.variable} ${figtree.variable} ${caveat.variable} selection:bg-peach selection:text-ink`}
     >
       <body className="bg-bg text-ink min-h-screen flex flex-col font-sans antialiased relative">
+        <SmoothScroll />
+        <PawTrail />
         {/* Accessible Skip Link */}
         <a
           href="#main-content"
@@ -91,16 +94,14 @@ export default function RootLayout({
           Skip to main content
         </a>
 
-        <SmoothScrollProvider>
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <main id="main-content" className="flex-1">
-              {children}
-            </main>
-            <Footer />
-          </div>
-        </SmoothScrollProvider>
-          <ScrollPup />
+        <div className="flex flex-col min-h-screen">
+          <Header />
+          <main id="main-content" className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </div>
+        <ScrollPup />
       </body>
     </html>
   );

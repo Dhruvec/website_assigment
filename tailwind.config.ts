@@ -7,14 +7,22 @@ const config: Config = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    screens: {
+      xs: '480px',
+      sm: '640px',
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+      '2xl': '1536px',
+    },
     extend: {
       colors: {
         bg: '#fffdf8',
         cream: {
-          DEFAULT: '#fde8c4',
+          DEFAULT: '#fdeccd',
           50: '#fffcf7',
           100: '#fdf3e2',
-          200: '#fde8c4',
+          200: '#fdeccd',
           300: '#f9d59a',
           400: '#f5be70',
         },

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default function PuppiesPage() {
   return (
     <div className="py-12 sm:py-20 bg-bg min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1200px] px-[5vw] box-border">
         {/* Page Header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 bg-cream px-3.5 py-1 rounded-full border border-caramel/20 mb-3 shadow-sm">
@@ -32,19 +32,20 @@ export default function PuppiesPage() {
             nursery viewing in Business Bay or request a high-res 4K nursery video.
           </p>
         </div>
+      </div>
 
-        {/* Client Gallery with Suspense */}
-        <Suspense
-          fallback={
+      {/* Client Gallery with Suspense */}
+      <Suspense
+        fallback={
+          <div className="mx-auto w-full max-w-[1200px] px-[5vw] box-border">
             <div className="h-96 rounded-3xl bg-cream-100/50 animate-pulse border-2 border-ink/15 flex items-center justify-center">
               <span className="font-accent text-2xl text-caramel">Loading companions...</span>
             </div>
-          }
-        >
-          <PuppyGalleryClient />
-        </Suspense>
-      </div>
+          </div>
+        }
+      >
+        <PuppyGalleryClient />
+      </Suspense>
     </div>
   );
 }
-

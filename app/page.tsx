@@ -1,6 +1,6 @@
 import React from 'react';
 import { Hero } from '@/components/home/Hero';
-import { DoorsSection } from '@/components/home/DoorsSection';
+import MeetThePups from '@/components/home/MeetThePups';
 import { TwoWaysSection } from '@/components/home/TwoWaysSection';
 import { JourneySection } from '@/components/home/JourneySection';
 import { ChatSection } from '@/components/home/ChatSection';
@@ -16,7 +16,7 @@ export default function HomePage() {
       <Hero />
 
       {/* 3. "Meet the pups" Doors Section */}
-      <DoorsSection />
+      <MeetThePups />
 
       {/* 4. "Two ways to meet your puppy" */}
       <TwoWaysSection />

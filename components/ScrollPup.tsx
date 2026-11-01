@@ -1,59 +1,98 @@
 'use client';
 
-import {
-  motion,
-  useScroll,
-  useSpring,
-  useTransform,
-  useVelocity,
-  useReducedMotion,
-} from 'framer-motion';
-import { useEffect, useState, useRef, useCallback, useLayoutEffect } from 'react';
-import { Mascot } from '@/components/ui/Mascot';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
+import { createPortal } from 'react-dom';
+import { Mascot, MascotPeek } from '@/components/ui/Mascot';
 
 /* ─────────────────────────────────────────────────────────────────────
-   ZIGZAG WAYPOINTS
-   Each entry is [scrollProgress, xVw, yVh].
-   Edit these to retune the path – the dog lerps between them.
-
-   wp 0  : resting in the hero slot (x/y overridden at runtime)
-   wp 1  : hop up above the slot
-   wp 2+ : zigzag across the screen
+   CONFIG / TUNABLES
    ───────────────────────────────────────────────────────────────────── */
-const ZIGZAG_WAYPOINTS: [number, number, number][] = [
-  //  progress,  x (vw),  y (vh)
-  [0.0,   50,  56],   // wp 0 – slot rest (x/y replaced dynamically)
-  [0.03,  50,  36],   // wp 1 – hop above slot (x replaced dynamically)
-  [0.10,  80,  48],   // first cross → right
-  [0.22,   8,  52],   // ← left
-  [0.36,  78,  46],   // → right
-  [0.50,   6,  60],   // ← left
-  [0.64,  80,  50],   // → right
-  [0.78,   8,  58],   // ← left
-  [0.92,  76,  66],   // → right
-  [1.0,   10,  72],   // end – near bottom-left
-];
 
 /**
- * ScrollPup — fixed-position mascot that starts in the hero's #pup-slot
- * and zigzags across the screen driven by scroll progress.
- *
- * - At scroll 0 the dog sits in the slot, its lower body hidden behind
- *   the scalloped divider (dog z-20, divider z-30, header z-50).
- * - At ~3 % progress the dog hops 20 px above the slot.
- * - After that it crosses between ~8 vw and ~80 vw while drifting on y.
- * - Scrolling up retraces the path and the dog returns to the slot.
- * - Legs animate only while scrolling; tail wags always.
- * - Below 768 px nothing is rendered here (a static peeking mascot is
- *   rendered inside the hero instead).
+ * Zigzag path: 10 stops expressed in vw/vh, driven by normalized scroll
+ * progress.
+ * progress stops [0, .1, .22, .34, .46, .58, .7, .82, .92, 1]
+ * x(vw) [50, 78, 8, 80, 10, 78, 8, 76, 14, 50]
+ * y(vh) [45, 48, 64, 46, 66, 48, 64, 46, 64, 58]
  */
-export default function ScrollPup() {
-  /* ── reduced motion ──────────────────────────────────────────────── */
-  const shouldReduce = useReducedMotion();
+const ZIGZAG_STOPS: [number, number, number][] = [
+  [0.00, 50, 45],
+  [0.10, 78, 48],
+  [0.22, 8, 64],
+  [0.34, 80, 46],
+  [0.46, 10, 66],
+  [0.58, 78, 48],
+  [0.70, 8, 64],
+  [0.82, 76, 46],
+  [0.92, 14, 64],
+  [1.00, 50, 58],
+];
 
-  /* ── viewport / media ────────────────────────────────────────────── */
+/** Release distance: after ~160px of scroll the dog crossfades to walking and hops out. */
+const RELEASE_DISTANCE = 160;
+
+/** Blend factor: ease the dog out of slot into zigzag path. */
+const RELEASE_RANGE = 0.6;
+
+/** Hop: dog emerges from 70px below slot to 20px above it. */
+const HOP_HIDDEN = 70;
+const HOP_ABOVE = -20;
+
+/** Smooth the raw scrollY before feeding it into the path math. */
+const SCROLL_SMOOTH = 0.2;
+
+/** Threshold for "legs moving" (px per frame). */
+const WALK_THRESHOLD = 0.5;
+/** Threshold to ignore tiny dx when deciding facing. */
+const FACE_THRESHOLD = 0.4;
+
+const DOG_WIDTH = 150;
+const DOG_HEIGHT = 112.5;
+
+/* ─────────────────────────────────────────────────────────────────────
+   Helpers
+   ───────────────────────────────────────────────────────────────────── */
+
+function smoothstep(t: number): number {
+  return t * t * (3 - 2 * t);
+}
+
+const ease = smoothstep;
+
+function clamp(t: number, min = 0, max = 1): number {
+  return Math.max(min, Math.min(max, t));
+}
+
+export default function ScrollPup() {
+  const pathname = usePathname();
+  const isHome = pathname === '/';
+
+  const [mounted, setMounted] = useState(false);
   const [isDesktop, setIsDesktop] = useState(true);
+
+  /* ── slot measurement (page coords) ────────────────────────────────── */
+  const [slotPos, setSlotPos] = useState<{ x: number; y: number } | null>(null);
+
+  const measureSlot = useCallback(() => {
+    if (typeof document === 'undefined') return;
+    const el = document.getElementById('pup-slot');
+    if (!el) {
+      setSlotPos(null);
+      return;
+    }
+    const rect = el.getBoundingClientRect();
+    const pageX = rect.left + rect.width / 2 + window.scrollX;
+    const pageY = rect.top + rect.height / 2 + window.scrollY;
+    setSlotPos({ x: pageX, y: pageY });
+  }, []);
+
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
     const mql = window.matchMedia('(min-width: 768px)');
     const handler = () => setIsDesktop(mql.matches);
     handler();
@@ -61,141 +100,325 @@ export default function ScrollPup() {
     return () => mql.removeEventListener('change', handler);
   }, []);
 
-  /* ── slot measurement ────────────────────────────────────────────── */
-  const [slotPos, setSlotPos] = useState<{ x: number; y: number } | null>(null);
-  const measureSlot = useCallback(() => {
-    const el = document.getElementById('pup-slot');
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    // Convert to page coordinates (viewport rect + scrollY)
-    const pageX = rect.left + rect.width / 2 + window.scrollX;
-    const pageY = rect.top + rect.height / 2 + window.scrollY;
-    setSlotPos({ x: pageX, y: pageY });
-  }, []);
-
-  useLayoutEffect(() => {
+  // Measure on mount & resize on home page
+  useEffect(() => {
+    if (!isHome || typeof window === 'undefined') return;
     measureSlot();
     window.addEventListener('resize', measureSlot);
-    return () => window.removeEventListener('resize', measureSlot);
-  }, [measureSlot]);
+    const t = setTimeout(measureSlot, 300);
+    return () => {
+      window.removeEventListener('resize', measureSlot);
+      clearTimeout(t);
+    };
+  }, [measureSlot, isHome]);
 
-  /* ── build waypoints with slot override ─────────────────────────── */
-  // Convert vw/vh waypoints to px so useTransform can output px.
-  // wp 0 and wp 1 x are pinned to the slot's page-x; wp 0 y is slot
-  // lowered by 70 px (hidden behind the scallop).
-  const buildPxWaypoints = useCallback(() => {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const docH = document.documentElement.scrollHeight;
+  /* ── animation loop refs (no state re-renders per frame) ──────────── */
+  const dogRef = useRef<HTMLDivElement>(null);
+  const flipRef = useRef<HTMLDivElement>(null);
 
-    return ZIGZAG_WAYPOINTS.map(([progress, xVw, yVh], i) => {
-      let xPx = (xVw / 100) * vw;
-      let yPx = (yVh / 100) * vh;
+  const curScrollYRef = useRef(0);
+  const prevXRef = useRef(0);
+  const prevWalkingRef = useRef(false);
+  const prevFacingRef = useRef<1 | -1>(1);
+  const settledRef = useRef(false);
 
-      if (slotPos) {
-        if (i === 0) {
-          xPx = slotPos.x - 48; // center the 96 px wide mascot
-          yPx = slotPos.y + 70;  // lowered 70 px → hidden behind scallop
-        } else if (i === 1) {
-          xPx = slotPos.x - 48;
-          yPx = slotPos.y - 20;  // hop 20 px above slot
+  // Crossfade opacity state (peek vs walk)
+  const [peekOpacity, setPeekOpacity] = useState(1);
+  const [walkOpacity, setWalkOpacity] = useState(0);
+
+  const [walking, setWalking] = useState(false);
+  const [facing, setFacing] = useState<1 | -1>(1);
+  const [settled, setSettled] = useState(false);
+
+  // Reset state when navigating to home page
+  useEffect(() => {
+    if (isHome) {
+      curScrollYRef.current = typeof window !== 'undefined' ? window.scrollY : 0;
+      prevXRef.current = 0;
+      prevWalkingRef.current = false;
+      prevFacingRef.current = 1;
+      settledRef.current = false;
+      setPeekOpacity(1);
+      setWalkOpacity(0);
+      setWalking(false);
+      setFacing(1);
+      setSettled(false);
+    }
+  }, [isHome]);
+
+  /* ── rAF loop (smooth cur += (target - cur) * 0.2) ────────────────── */
+  useEffect(() => {
+    if (!isHome || !isDesktop || typeof document === 'undefined') return;
+
+    let rafId: number;
+    let running = true;
+
+    const loop = () => {
+      if (!running || !dogRef.current) return;
+
+      const slotEl = document.getElementById('pup-slot');
+      const raw = window.scrollY;
+      curScrollYRef.current += (raw - curScrollYRef.current) * SCROLL_SMOOTH;
+      const s = curScrollYRef.current;
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const docH = Math.max(
+        document.documentElement.scrollHeight,
+        document.body.scrollHeight
+      );
+      const range = Math.max(docH - vh, 1);
+
+      // Slot / fallback coordinates for "/"
+      const slotRect = slotEl ? slotEl.getBoundingClientRect() : null;
+      const slotViewX = slotRect
+        ? slotRect.left + slotRect.width / 2 - DOG_WIDTH / 2
+        : (slotPos ? slotPos.x - DOG_WIDTH / 2 : vw / 2 - DOG_WIDTH / 2);
+      const slotViewY = slotRect
+        ? slotRect.top
+        : (slotPos ? slotPos.y - s - DOG_HEIGHT / 2 : vh * 0.45 - DOG_HEIGHT / 2);
+
+      let sx = 0;
+      let sy = 0;
+
+      // Home page: dog in #pup-slot at scroll 0, hops out at ~160px
+      if (s < RELEASE_DISTANCE) {
+        // Inside slot in peek pose
+        sx = slotViewX;
+        sy = slotViewY;
+
+        // Crossfade: at scroll 0 peek=1 walk=0; near 160px crossfade
+        const cross = clamp((s - 120) / 40, 0, 1);
+        setPeekOpacity(1 - cross);
+        setWalkOpacity(cross);
+      } else {
+        // Hopped out: full walking pose
+        setPeekOpacity(0);
+        setWalkOpacity(1);
+
+        const progress = clamp((s - RELEASE_DISTANCE) / range, 0, 1);
+        const hopProgress = clamp((s - RELEASE_DISTANCE) / 80, 0, 1);
+        const easeHop = smoothstep(hopProgress);
+
+        const sySlot = slotViewY + HOP_HIDDEN * (1 - easeHop) - HOP_ABOVE * easeHop;
+        const sxSlot = slotViewX;
+
+        // Zigzag stops
+        const stops = ZIGZAG_STOPS;
+        let left = 0;
+        for (let i = 1; i < stops.length; i++) {
+          if (progress <= stops[i][0]) {
+            left = i - 1;
+            break;
+          }
+        }
+        const a = stops[left];
+        const right = stops[left + 1] || stops[stops.length - 1];
+        const t = a[0] === right[0] ? 0 : (progress - a[0]) / (right[0] - a[0]);
+        const xVw = a[1] + (right[1] - a[1]) * t;
+        const yVh = a[2] + (right[2] - a[2]) * t;
+        const nx = (xVw / 100) * vw - DOG_WIDTH / 2;
+        const ny = (yVh / 100) * vh - DOG_HEIGHT / 2;
+
+        const b = smoothstep(clamp((s - RELEASE_DISTANCE) / (vh * RELEASE_RANGE), 0, 1));
+        sx = sxSlot + (nx - sxSlot) * b;
+        sy = sySlot + (ny - sySlot) * b;
+      }
+
+      let x = sx;
+      let y = sy;
+      const box = dogRef.current;
+
+      // ── D1) Floor-walk in pinned MeetThePups section ────────────────
+      const meetEl = document.getElementById('meet-pups');
+      const floorEl = document.getElementById('pups-floor');
+      if (meetEl && floorEl && box) {
+        const sr = meetEl.getBoundingClientRect();
+        const fr = floorEl.getBoundingClientRect();
+        const H = window.innerHeight;
+        const W = window.innerWidth;
+        const dogW = box.offsetWidth || DOG_WIDTH;
+        const dogH = box.offsetHeight || DOG_HEIGHT;
+
+        const f = clamp(-sr.top / Math.max(1, sr.height - H));
+        const floorX = 24 + f * (W - dogW - 48);
+        const floorY = fr.top + 55 - dogH;
+        const w =
+          ease(clamp((H - sr.top) / (0.6 * H))) *
+          ease(clamp((sr.bottom - H) / (0.4 * H)));
+
+        if (Number.isFinite(floorX) && Number.isFinite(floorY) && Number.isFinite(w)) {
+          x += (floorX - x) * w;
+          y += (floorY - y) * w;
         }
       }
 
-      // Convert page-y to a fixed-position top value:
-      // fixedY = pageY − scrollY. But since we drive everything from
-      // scroll progress we bake the expected scrollY into each waypoint.
-      // At progress p the scroll position is p * (docH − vh).
-      const expectedScroll = progress * Math.max(docH - vh, 1);
-      const fixedY = yPx - expectedScroll;
+      // ── D2) Basket settling in Footer ───────────────────────────────
+      const basketEl = document.getElementById('pup-basket');
+      if (basketEl && box) {
+        const br = basketEl.getBoundingClientRect();
+        const H = window.innerHeight;
+        const dogW = DOG_WIDTH;
+        const PEEK_DOG_H = 150;
 
-      return { progress, xPx, fixedY };
-    });
-  }, [slotPos]);
+        const tx = br.left + br.width / 2 - dogW / 2;
+        const ty = br.top + 118 - PEEK_DOG_H;
 
-  const [waypoints, setWaypoints] = useState<
-    { progress: number; xPx: number; fixedY: number }[]
-  >([]);
+        const basketVisible = H - br.top;
+        const basketProgress = clamp((basketVisible - 40) / 160);
 
-  useLayoutEffect(() => {
-    const update = () => setWaypoints(buildPxWaypoints());
-    update();
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, [buildPxWaypoints]);
+        const docHeight = Math.max(
+          document.documentElement.scrollHeight,
+          document.body.scrollHeight
+        );
+        const maxScroll = Math.max(1, docHeight - H);
+        const distToBottom = Math.max(0, maxScroll - s);
+        const bottomProgress = distToBottom < 70 ? 1 : clamp((280 - distToBottom) / 210);
 
-  /* ── scroll + spring ─────────────────────────────────────────────── */
-  const { scrollYProgress } = useScroll();
-  const spring = useSpring(scrollYProgress, { stiffness: 90, damping: 24 });
+        const rawW = Math.max(basketProgress, bottomProgress);
+        const wBasket = ease(rawW);
 
-  /* ── derive x & y from waypoints ─────────────────────────────────── */
-  const inputRange = waypoints.map((wp) => wp.progress);
-  const xOutput = waypoints.map((wp) => wp.xPx);
-  const yOutput = waypoints.map((wp) => wp.fixedY);
+        if (Number.isFinite(tx) && Number.isFinite(ty) && Number.isFinite(wBasket)) {
+          x += (tx - x) * wBasket;
+          y += (ty - y) * wBasket;
 
-  // Guard: useTransform needs at least 2 entries and monotonically
-  // increasing input.  Before waypoints are populated, use a dummy.
-  const safeInput = inputRange.length >= 2 ? inputRange : [0, 1];
-  const safeXOut = xOutput.length >= 2 ? xOutput : [0, 0];
-  const safeYOut = yOutput.length >= 2 ? yOutput : [0, 0];
+          const isSettled = wBasket >= 0.88;
+          if (isSettled) {
+            x = tx;
+            y = ty;
+          }
 
-  const x = useTransform(spring, safeInput, safeXOut);
-  const y = useTransform(spring, safeInput, safeYOut);
-
-  /* ── velocity → walking state ────────────────────────────────────── */
-  const velocity = useVelocity(scrollYProgress);
-  const [walking, setWalking] = useState(false);
-  useEffect(() => {
-    let raf: number;
-    const check = () => {
-      setWalking(Math.abs(velocity.get()) > 0.0008);
-      raf = requestAnimationFrame(check);
-    };
-    raf = requestAnimationFrame(check);
-    return () => cancelAnimationFrame(raf);
-  }, [velocity]);
-
-  /* ── facing direction ────────────────────────────────────────────── */
-  const [facing, setFacing] = useState<1 | -1>(1);
-  const prevXRef = useRef(0);
-  useEffect(() => {
-    const unsub = x.on('change', (v: number) => {
-      const delta = v - prevXRef.current;
-      if (Math.abs(delta) > 0.5) {
-        setFacing(delta > 0 ? 1 : -1);
+          if (settledRef.current !== isSettled) {
+            settledRef.current = isSettled;
+            setSettled(isSettled);
+            box.classList.toggle('pup-settled', isSettled);
+          }
+        }
+      } else if (settledRef.current) {
+        settledRef.current = false;
+        setSettled(false);
+        if (box) box.classList.remove('pup-settled');
       }
-      prevXRef.current = v;
-    });
-    return unsub;
-  }, [x]);
 
-  /* ── render nothing on mobile or before measurement ──────────────── */
-  if (!isDesktop || waypoints.length < 2) return null;
+      // ── Facing direction (from dx sign) ─────────────────────────────
+      const isSettled = settledRef.current;
+      const dx = isSettled ? 0 : x - prevXRef.current;
 
-  /* ── reduced motion: static in slot, no movement ─────────────────── */
-  if (shouldReduce) return null;
+      if (isSettled) {
+        if (prevFacingRef.current !== 1) {
+          prevFacingRef.current = 1;
+          setFacing(1);
+        }
+        if (flipRef.current) {
+          flipRef.current.style.transform = 'scaleX(1)';
+        }
+      } else if (Math.abs(dx) > FACE_THRESHOLD) {
+        const newFacing = dx > 0 ? (1 as const) : (-1 as const);
+        if (prevFacingRef.current !== newFacing) {
+          prevFacingRef.current = newFacing;
+          setFacing(newFacing);
+          if (flipRef.current) {
+            flipRef.current.style.transform = `scaleX(${newFacing})`;
+          }
+        }
+      }
+      prevXRef.current = x;
+
+      // ── Walking state (legs move only while moving; tail always wags) ──
+      const moved = !isSettled && Math.abs(dx) > WALK_THRESHOLD;
+      if (prevWalkingRef.current !== moved) {
+        prevWalkingRef.current = moved;
+        setWalking(moved);
+      }
+
+      // ── Write transform (translate3d ONLY) ─────────────────────────
+      if (Number.isFinite(x) && Number.isFinite(y) && dogRef.current) {
+        dogRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+      }
+
+      rafId = requestAnimationFrame(loop);
+    };
+
+    rafId = requestAnimationFrame(loop);
+
+    return () => {
+      running = false;
+      cancelAnimationFrame(rafId);
+    };
+  }, [isHome, isDesktop, slotPos, pathname]);
+
+  // When pathname !== "/", return null before rendering DOM or starting rAF
+  if (!mounted || !isDesktop || !isHome || typeof document === 'undefined') {
+    return null;
+  }
 
   return (
-    <motion.div
-      aria-hidden="true"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        x,
-        y,
-        scaleX: facing,
-        zIndex: 20,       // below scallop (z-30) and header (z-50)
-        pointerEvents: 'none',
-        willChange: 'transform',
-      }}
-      transition={{ scaleX: { duration: 0.35 } }}
-    >
-      <Mascot
-        pose={walking ? 'walk' : 'idle'}
-        animated
-        className="w-24 h-24"
-      />
-    </motion.div>
+    <>
+      <div aria-hidden="true" />
+      {createPortal(
+        <div
+          ref={dogRef}
+          className="scroll-pup pointer-events-none fixed left-0 top-0 z-20 hidden md:block will-change-transform"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: DOG_WIDTH,
+            height: 'auto',
+            zIndex: 20,
+            pointerEvents: 'none',
+            willChange: 'transform',
+            transform: `translate3d(${slotPos ? slotPos.x - DOG_WIDTH / 2 : (typeof window !== 'undefined' ? window.innerWidth / 2 : 500) - DOG_WIDTH / 2}px, ${slotPos ? slotPos.y - DOG_HEIGHT / 2 : (typeof window !== 'undefined' ? window.innerHeight * 0.45 : 300) - DOG_HEIGHT / 2}px, 0)`,
+          }}
+        >
+          <div
+            ref={flipRef}
+            style={{
+              width: DOG_WIDTH,
+              height: 'auto',
+              transform: `scaleX(${facing})`,
+              position: 'relative',
+            }}
+          >
+            {/* Peek pose: at scroll 0 in slot, or settled in footer basket */}
+            <div
+              style={{
+                opacity: settled ? 1 : peekOpacity,
+                position: settled || peekOpacity === 1 ? 'relative' : 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                pointerEvents: 'none',
+                display: (!settled && peekOpacity <= 0) ? 'none' : 'block',
+              }}
+            >
+              <MascotPeek className="block w-full h-auto" />
+            </div>
+
+            {/* Walking pose: after hop-out on home */}
+            {!settled && (
+              <div
+                style={{
+                  opacity: walkOpacity,
+                  position: walkOpacity === 1 ? 'relative' : 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  display: walkOpacity <= 0 ? 'none' : 'block',
+                }}
+              >
+                <Mascot
+                  walking={walking}
+                  pose="walk"
+                  className="block w-full h-auto"
+                  noWag={false}
+                />
+              </div>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
+    </>
   );
 }

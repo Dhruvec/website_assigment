@@ -4,7 +4,7 @@
 
 :root {
   --bg: #fffdf8;
-  --cream: #fde8c4;
+  --cream: #fdeccd;
   --peach: #f6d9a8;
   --ink: #2a1a12;
   --ink-light: #4d372b;
@@ -20,27 +20,45 @@
     background-color: var(--bg);
     color: var(--ink);
     font-family: var(--font-figtree), sans-serif;
-    font-size: 18px; /* 1.125rem body baseline */
-    scroll-behavior: smooth;
+    font-size: 18px;
+    scroll-behavior: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+
+  .lenis.lenis-stopped {
+    overflow: hidden;
   }
 
   body {
     min-height: 100vh;
     background-color: var(--bg);
     color: var(--ink);
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-fraunces), serif;
     letter-spacing: -0.025em;
     color: var(--ink);
     font-weight: 800;
   }
 
-  /* Focus visible accessibility styling */
   :focus-visible {
     outline: 3px solid var(--caramel);
     outline-offset: 3px;
@@ -55,10 +73,12 @@
   box-shadow: 0 5px 0 0 var(--caramel-dark);
   transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
 .btn-chunky-caramel:hover {
   transform: translateY(-2px);
   box-shadow: 0 7px 0 0 var(--caramel-dark);
 }
+
 .btn-chunky-caramel:active {
   transform: translateY(3px);
   box-shadow: 0 2px 0 0 var(--caramel-dark);
@@ -71,11 +91,13 @@
   box-shadow: 0 5px 0 0 var(--ink);
   transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
 .btn-chunky-secondary:hover {
   background-color: rgba(42, 26, 18, 0.04);
   transform: translateY(-2px);
   box-shadow: 0 7px 0 0 var(--ink);
 }
+
 .btn-chunky-secondary:active {
   transform: translateY(3px);
   box-shadow: 0 2px 0 0 var(--ink);
@@ -87,29 +109,29 @@
   box-shadow: 0 5px 0 0 var(--whatsapp-dark);
   transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
 .btn-chunky-whatsapp:hover {
   transform: translateY(-2px);
   box-shadow: 0 7px 0 0 var(--whatsapp-dark);
 }
+
 .btn-chunky-whatsapp:active {
   transform: translateY(3px);
   box-shadow: 0 2px 0 0 var(--whatsapp-dark);
 }
 
-/* Argyle pattern strip beneath scallops */
 .bg-argyle-strip {
   background-color: var(--cream);
-  background-image: 
-    linear-gradient(135deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%), 
-    linear-gradient(225deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%), 
-    linear-gradient(45deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%), 
+  background-image:
+    linear-gradient(135deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%),
+    linear-gradient(225deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%),
+    linear-gradient(45deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%),
     linear-gradient(315deg, rgba(161, 74, 28, 0.08) 25%, transparent 25%);
   background-position: 12px 0, 12px 0, 0 0, 0 0;
   background-size: 24px 24px;
   background-repeat: repeat;
 }
 
-/* Faint paw print pattern background */
 .bg-paws-subtle {
   background-image: radial-gradient(#2a1a12 0.75px, transparent 0.75px), radial-gradient(#a14a1c 0.75px, #fffdf8 0.75px);
   background-size: 48px 48px;
@@ -117,22 +139,274 @@
   opacity: 0.85;
 }
 
-/* Arch doorway photo frame */
 .arch-frame {
   border-radius: 9999px 9999px 16px 16px;
   border: 2px solid var(--ink);
   overflow: hidden;
   box-shadow: 0 8px 24px -4px rgba(42, 26, 18, 0.15);
-  background-color: #f7ede2;
+  background-color: #fdeccd;
 }
 
-/* Reduced motion overrides */
+/* ─────────────────────────────────────────────────────────────────────
+   Biscuit Mascot Animations (per exact specification)
+   ───────────────────────────────────────────────────────────────────── */
+
+/* Tail wag keyframes: -20deg to 24deg */
+@keyframes biscuitTailWag {
+  0% {
+    transform: rotate(-20deg);
+  }
+
+  100% {
+    transform: rotate(24deg);
+  }
+}
+
+/* Leg swing keyframes: natural -9deg to 9deg walking stride */
+@keyframes biscuitLegSwingA {
+  0% {
+    transform: rotate(-9deg);
+  }
+
+  100% {
+    transform: rotate(9deg);
+  }
+}
+
+@keyframes biscuitLegSwingB {
+  0% {
+    transform: rotate(9deg);
+  }
+
+  100% {
+    transform: rotate(-9deg);
+  }
+}
+
+/* Body bob keyframes: translateY(-2px) while walking */
+@keyframes biscuitBodyWalkBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Breathing bob keyframes (idle) */
+@keyframes biscuitIdleBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* Head nod keyframes: 0 to 4deg while walking */
+@keyframes biscuitHeadNod {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(4deg);
+  }
+}
+
+/* Ear flop keyframes: 0 to 6deg while walking */
+@keyframes biscuitEarFlop {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  50% {
+    transform: rotate(6deg);
+  }
+}
+
+/* Blink keyframes: eyes scaleY to 0.1 for 120ms every 4s */
+@keyframes biscuitBlink {
+  0%,
+  96%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  98% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* Shadow scale keyframes: scales 0.9 to 1 with bob */
+@keyframes biscuitShadowScale {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(0.9);
+  }
+}
+
+/* Default IDLE animations on the mascot */
+.pup-svg .pup-tail {
+  transform-box: fill-box;
+  transform-origin: 38px 68px;
+  animation: biscuitTailWag 0.35s ease-in-out infinite alternate;
+}
+
+.pup-svg .pup-body {
+  transform-box: fill-box;
+  transform-origin: 80px 74px;
+  animation: biscuitIdleBob 2.4s ease-in-out infinite;
+}
+
+.pup-svg .pup-head {
+  transform-box: fill-box;
+  transform-origin: 118px 48px;
+}
+
+.pup-svg .eyes {
+  transform-box: fill-box;
+  transform-origin: center center;
+  animation: biscuitBlink 4s infinite;
+}
+
+.pup-svg .pup-shadow {
+  transform-box: view-box;
+  transform-origin: 80px 112px;
+  animation: biscuitShadowScale 2.4s ease-in-out infinite;
+}
+
+/* Legs base: smooth return to neutral standing pose when motion stops */
+.pup-svg .leg {
+  transform-box: view-box;
+  transition: transform 0.15s ease-out;
+}
+
+/* Walking animations when .pup-walk class is present on svg */
+.pup-svg.pup-walk .pup-tail {
+  transform-box: view-box;
+  transform-origin: 38px 68px;
+  animation-duration: 0.22s;
+}
+
+.pup-svg.pup-walk .pup-body {
+  transform-box: view-box;
+  transform-origin: 80px 74px;
+  animation: biscuitBodyWalkBob 0.3s ease-in-out infinite;
+}
+
+.pup-svg.pup-walk .pup-shadow {
+  transform-box: view-box;
+  transform-origin: 80px 112px;
+  animation: biscuitShadowScale 0.3s ease-in-out infinite alternate;
+}
+
+.pup-svg.pup-walk .pup-head {
+  transform-box: view-box;
+  transform-origin: 118px 48px;
+  animation: biscuitHeadNod 0.3s ease-in-out infinite;
+}
+
+.pup-svg.pup-walk .ear {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: biscuitEarFlop 0.3s ease-in-out infinite alternate;
+}
+
+/* Legs animation during walking: precise fixed SVG hip/shoulder joints */
+.pup-svg.pup-walk .leg.back-far {
+  transform-origin: 54px 81px;
+}
+
+.pup-svg.pup-walk .leg.front-far {
+  transform-origin: 116px 81px;
+}
+
+.pup-svg.pup-walk .leg.back-near {
+  transform-origin: 48.5px 84px;
+}
+
+.pup-svg.pup-walk .leg.front-near {
+  transform-origin: 110.5px 84px;
+}
+
+/* Diagonal pair 1: back-far and front-near */
+.pup-svg.pup-walk .leg.back-far,
+.pup-svg.pup-walk .leg.front-near {
+  animation: biscuitLegSwingA 0.3s ease-in-out infinite alternate;
+}
+
+/* Diagonal pair 2: back-near and front-far (180° out of phase) */
+.pup-svg.pup-walk .leg.back-near,
+.pup-svg.pup-walk .leg.front-far {
+  animation: biscuitLegSwingB 0.3s ease-in-out infinite alternate;
+}
+
+/* Static fallback / no-anim */
+.pup-no-anim,
+.pup-no-anim * {
+  animation: none !important;
+  transform: none !important;
+}
+
+/* Twinkling star animation for footer night sky */
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.65);
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Crescent moon float */
+@keyframes moonFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Settled mascot in basket: stop tail, body, legs, ears, but keep slow blink */
+.pup-settled .pup-tail,
+.pup-settled .pup-body,
+.pup-settled .leg,
+.pup-settled .ear,
+.pup-settled .pup-shadow {
+  animation: none !important;
+}
+
+.pup-settled .eyes {
+  animation: biscuitBlink 4s infinite !important;
+}
+
+/* Prefers reduced motion overrides */
 @media (prefers-reduced-motion: reduce) {
-  *, ::before, ::after {
+  .pup-svg *,
+  .pup-svg {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  *,
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
-

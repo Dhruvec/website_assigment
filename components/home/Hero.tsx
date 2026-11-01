@@ -1,222 +1,169 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { MessageCircle, Sparkles } from 'lucide-react';
 import { SITE_CONFIG, getWhatsAppLink } from '@/lib/site-config';
-import { Button } from '@/components/ui/Button';
-import { Mascot } from '@/components/ui/Mascot';
+import { ArchRow } from '@/components/home/ArchRow';
 import { Scallop } from '@/components/ui/Scallop';
 
-const HERO_ARCHES = [
-  { src: '/media/hero-1.jpg', alt: 'Teacup Maltipoo puppy', heightClass: 'h-48 sm:h-64 lg:h-72', mobileVisible: false },
-  { src: '/media/hero-2.jpg', alt: 'Snow White Pomeranian puppy', heightClass: 'h-56 sm:h-72 lg:h-84', mobileVisible: true },
-  { src: '/media/hero-3.jpg', alt: 'Red Toy Poodle puppy', heightClass: 'h-52 sm:h-68 lg:h-76', mobileVisible: true },
-  { src: '/media/hero-4.jpg', alt: 'Ruby Cavapoo puppy', heightClass: 'h-60 sm:h-76 lg:h-88', mobileVisible: true },
-  { src: '/media/hero-5.jpg', alt: 'Fluffy Bichon Frise puppy', heightClass: 'h-52 sm:h-68 lg:h-80', mobileVisible: false },
-  { src: '/media/hero-6.jpg', alt: 'Teacup Yorkie puppy', heightClass: 'h-56 sm:h-72 lg:h-84', mobileVisible: true },
-  { src: '/media/hero-7.jpg', alt: 'Imperial Shih Tzu puppy', heightClass: 'h-48 sm:h-64 lg:h-72', mobileVisible: false },
-];
+/** Staggered word reveal for the headline */
+function StaggeredLine({ words, startDelay }: { words: string[]; startDelay: number }) {
+  return (
+    <>
+      {words.map((word, i) => (
+        <motion.span
+          key={i}
+          className="inline-block"
+          initial={{ y: 32, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            duration: 0.55,
+            delay: startDelay + i * 0.06,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+        >
+          {word}{i < words.length - 1 ? '\u00A0' : ''}
+        </motion.span>
+      ))}
+    </>
+  );
+}
 
 export function Hero() {
-  const headlineWordsLine1 = ['Premium', 'teacup', 'puppies'];
-  const headlineWordsLine2 = ['in', `${SITE_CONFIG.city}`];
-
   return (
-    <section className="relative pt-8 sm:pt-14 pb-0 overflow-hidden bg-bg">
-      {/* Subtle Floating Paw Prints in Background */}
-      <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden" aria-hidden="true">
-        <motion.div
-          animate={{ y: [-10, 10, -10], x: [-5, 5, -5] }}
-          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-12 left-[10%] text-caramel/40"
-        >
-          🐾
-        </motion.div>
-        <motion.div
-          animate={{ y: [10, -10, 10], x: [5, -5, 5] }}
-          transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-28 right-[12%] text-caramel/30 text-2xl"
-        >
-          🐾
-        </motion.div>
-        <motion.div
-          animate={{ y: [-8, 8, -8] }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-64 left-[18%] text-caramel/25 text-lg"
-        >
-          🐾
-        </motion.div>
-      </div>
+    <section className="relative pb-0 overflow-visible bg-bg" style={{ paddingTop: 56 }}>
+      {/* Soft radial peach glow behind the hero */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 55%, rgba(253,232,196,0.9) 0%, transparent 60%)',
+        }}
+        aria-hidden="true"
+      />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-        {/* Handwritten Tagline with Animated Hand-drawn Underline */}
-        <div className="inline-flex flex-col items-center mb-4">
-          <div className="inline-flex items-center gap-2 bg-cream/70 px-4 py-1.5 rounded-full border border-caramel/20 shadow-sm">
-            <Sparkles className="w-4 h-4 text-caramel" />
-            <span className="font-accent text-2xl sm:text-3xl text-caramel-dark font-bold tracking-wide -rotate-1">
-              every puppy is family
-            </span>
-          </div>
+      {/* Centered hero text block */}
+      <div className="relative z-10 flex flex-col items-center text-center px-4" style={{ maxWidth: 700, margin: '0 auto' }}>
 
-          {/* Hand-drawn SVG Underline */}
+        {/* 1. Handwritten tagline — no pill, no border, no sparkle icon */}
+        <div className="inline-flex flex-col items-center mb-3">
+          <span
+            className="font-accent font-bold tracking-wide"
+            style={{ fontSize: '2rem', color: '#a14a1c', lineHeight: 1.2 }}
+          >
+            every puppy is family
+          </span>
+          {/* Hand-drawn SVG squiggle underline that draws itself */}
           <svg
-            viewBox="0 0 220 18"
+            viewBox="0 0 260 14"
             fill="none"
-            className="w-44 sm:w-56 h-3 -mt-1 text-caramel"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
+            style={{ width: '13rem', height: '0.7rem', marginTop: '-2px' }}
           >
             <motion.path
-              d="M3 14 C45 3, 160 2, 217 10 C175 14, 85 16, 25 15"
-              stroke="currentColor"
-              strokeWidth="3"
+              d="M4 9 C30 3, 80 2, 130 7 C180 12, 230 4, 256 8"
+              stroke="#a14a1c"
+              strokeWidth="2.5"
               strokeLinecap="round"
+              fill="none"
               initial={{ pathLength: 0, opacity: 0 }}
               animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ duration: 1.1, ease: 'easeInOut', delay: 0.2 }}
+              transition={{ duration: 0.9, ease: 'easeOut', delay: 0.3 }}
             />
           </svg>
         </div>
 
-        {/* Display Headline with Staggered Word Reveal */}
-        <h1 className="font-display font-black text-ink tracking-tight mb-6 leading-[1.08] text-[clamp(2.75rem,7vw,5.75rem)] max-w-4xl mx-auto">
-          <span className="block">
-            {headlineWordsLine1.map((word, idx) => (
-              <motion.span
-                key={idx}
-                initial={{ y: 28, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{
-                  duration: 0.6,
-                  delay: 0.15 + idx * 0.08,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="inline-block mr-3 sm:mr-4"
-              >
-                {word}
-              </motion.span>
-            ))}
+        {/* 2. Two-line headline — ALL dark ink, words rise with 0.06s stagger */}
+        <h1
+          className="font-display font-black text-ink"
+          style={{
+            fontSize: 'clamp(3.2rem, 5.4vw, 6.5rem)',
+            lineHeight: 0.92,
+            letterSpacing: '-0.03em',
+            whiteSpace: 'normal',
+            maxWidth: 700,
+          }}
+        >
+          <span className="whitespace-nowrap inline-block">
+            <StaggeredLine words={['Premium', 'teacup']} startDelay={0.1} />
           </span>
-          <span className="block text-caramel">
-            {headlineWordsLine2.map((word, idx) => (
-              <motion.span
-                key={idx}
-                initial={{ y: 28, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{
-                  duration: 0.6,
-                  delay: 0.45 + idx * 0.08,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="inline-block mr-3 sm:mr-4"
-              >
-                {word}
-              </motion.span>
-            ))}
+          <br />
+          <span className="whitespace-nowrap inline-block">
+            <StaggeredLine words={['puppies', 'in', SITE_CONFIG.city]} startDelay={0.22} />
           </span>
         </h1>
 
-        {/* Subtext */}
+        {/* 3. Subtext — two short lines, 1.2rem, max 46ch */}
         <motion.p
-          initial={{ y: 20, opacity: 0 }}
+          initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.65 }}
-          className="text-base sm:text-lg md:text-xl text-ink/80 max-w-2xl mx-auto mb-8 font-normal leading-relaxed"
+          transition={{ duration: 0.55, delay: 0.38 }}
+          style={{
+            fontSize: '1.2rem',
+            color: '#5a3a2a',
+            maxWidth: '46ch',
+            marginTop: 20,
+            lineHeight: 1.55,
+          }}
         >
-          Boutique showroom visits in Business Bay and world-class ethical imports from Korea & Europe.
-          Hypoallergenic, health-warrantied companions with VIP door-to-door delivery.
+          Meet your new best friend in our {SITE_CONFIG.city} showroom,<br
+            className="hidden sm:block"
+          /> or order a rare miniature breed from trusted breeders worldwide.
         </motion.p>
 
-        {/* CTAs */}
+        {/* 4. CTA buttons — 56px pill */}
         <motion.div
-          initial={{ y: 20, opacity: 0 }}
+          initial={{ y: 16, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14"
+          transition={{ duration: 0.5, delay: 0.56 }}
+          className="flex flex-col sm:flex-row items-center justify-center"
+          style={{ gap: 16, marginTop: 28, marginBottom: 40 }}
         >
-          <Button href="/puppies" variant="primary" size="lg" className="w-full sm:w-auto shadow-chunky-caramel">
+          {/* Primary: caramel fill, 5px darker offset shadow */}
+          <a
+            href="/puppies"
+            className="inline-flex items-center justify-center rounded-full font-bold text-white transition-all hover:-translate-y-0.5 active:translate-y-0.5"
+            style={{
+              height: 56,
+              paddingLeft: '2rem',
+              paddingRight: '2rem',
+              backgroundColor: '#a14a1c',
+              boxShadow: '0 5px 0 0 #6f2f10',
+              fontSize: '1rem',
+            }}
+          >
             View available puppies
-          </Button>
+          </a>
 
-          <Button
-            href={getWhatsAppLink('Hi Petite Paws! I would like to enquire on WhatsApp about your available puppies.')}
-            isExternal
-            variant="secondary"
-            size="lg"
-            icon={<MessageCircle className="w-5 h-5 text-whatsapp" />}
-            className="w-full sm:w-auto"
+          {/* Secondary: cream fill, 1.5px ink border, NO icon, NO heavy shadow */}
+          <a
+            href={getWhatsAppLink('Hi Petite Paws! I would like to enquire about your available puppies.')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-full font-bold text-ink transition-all hover:-translate-y-0.5 active:translate-y-0.5"
+            style={{
+              height: 56,
+              paddingLeft: '2rem',
+              paddingRight: '2rem',
+              backgroundColor: '#fff8ec',
+              border: '1.5px solid #2a1a12',
+              fontSize: '1rem',
+            }}
           >
             Enquire on WhatsApp
-          </Button>
+          </a>
         </motion.div>
-
-        {/* Bottom-aligned Row of Arched Frames Peeking Over Scalloped Edge */}
-        <div className="relative pt-6 max-w-6xl mx-auto">
-          {/* Arches Row – the center slot is reserved for the roaming mascot */}
-          <div className="flex items-end justify-center gap-2.5 sm:gap-4 md:gap-5 px-2">
-            {HERO_ARCHES.map((arch, index) => {
-              // Hide some arches on smaller screens
-              const visibilityClass = arch.mobileVisible ? 'flex' : 'hidden sm:flex';
-
-              // Insert the mascot slot right before the middle arch (index 3)
-              const isMiddle = index === 3;
-
-              return (
-                <React.Fragment key={index}>
-                  {isMiddle && (
-                    <>
-                      {/* Mascot slot – empty on desktop (ScrollPup aligns here),
-                          shows a static peeking mascot on mobile */}
-                      <div
-                        id="pup-slot"
-                        className="relative flex-shrink-0 w-[120px] sm:w-[150px] h-[120px] flex items-end justify-center z-20"
-                        aria-hidden="true"
-                      >
-                        {/* Mobile-only: static peeking mascot inside the slot */}
-                        <div className="block md:hidden">
-                          <Mascot pose="peek" className="w-28 h-24" />
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  <motion.div
-                    initial={{ y: 80, opacity: 0, scale: 0.9 }}
-                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                    transition={{
-                      type: 'spring',
-                      stiffness: 260,
-                      damping: 24,
-                      delay: 0.85 + index * 0.08,
-                    }}
-                    className={`relative flex-1 max-w-[150px] sm:max-w-[170px] lg:max-w-[190px] ${arch.heightClass} ${visibilityClass} arch-frame`}
-                  >
-                    <div className="relative w-full h-full">
-                      <Image
-                        src={arch.src}
-                        alt={arch.alt}
-                        fill
-                        priority={index === 1 || index === 3}
-                        sizes="(max-width: 640px) 25vw, (max-width: 1024px) 16vw, 180px"
-                        className="object-cover transition-transform duration-500 hover:scale-105"
-                      />
-                    </div>
-                  </motion.div>
-                </React.Fragment>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
-      {/* Scalloped Divider Beneath Hero with Argyle Strip – z-30 so the
-           roaming mascot (z-20) hides behind it at scroll 0 */}
-      <div className="w-full -mt-2 sm:-mt-4 relative z-30">
-        <Scallop position="bottom" fillColor="#fde8c4" showArgyle={true} />
+      {/* 5. ArchRow — full-width, outside the 700px centered block */}
+      <div className="relative z-10 w-full">
+        <ArchRow />
+      </div>
+
+      {/* 6. Scalloped divider z-30 (paints OVER arch bottoms) + argyle strip */}
+      <div className="w-full relative z-30">
+        <Scallop position="bottom" fillColor="#fdeccd" showArgyle={true} />
       </div>
     </section>
   );
 }
-

@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useTransition, useMemo } from 'react';
+import React, { useState, useTransition, useMemo, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { Search, RotateCcw, Filter, Sparkles, Dog } from 'lucide-react';
+import { Search, RotateCcw, Dog } from 'lucide-react';
 import { Puppy, PUPPIES } from '@/data/puppies';
 import { PuppyCard } from '@/components/puppies/PuppyCard';
 
@@ -27,7 +27,34 @@ export function PuppyGalleryClient() {
   const selectedBreed = searchParams.get('breed') || 'All Breeds';
   const selectedOrigin = searchParams.get('origin') || 'all';
   const selectedSex = searchParams.get('sex') || 'all';
-  const searchQuery = searchParams.get('q') || '';
+
+  // Immediate responsive local state for search input to prevent typing lag / focus disruption
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '');
+
+  // Keep local search in sync if search params change externally (e.g. back/forward navigation)
+  useEffect(() => {
+    setSearchTerm(searchParams.get('q') || '');
+  }, [searchParams]);
+
+  // Debounce URL update for search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const currentParam = searchParams.get('q') || '';
+      const trimmed = searchTerm.trim();
+      if (trimmed !== currentParam) {
+        const params = new URLSearchParams(searchParams.toString());
+        if (!trimmed) {
+          params.delete('q');
+        } else {
+          params.set('q', trimmed);
+        }
+        const qs = params.toString();
+        router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+      }
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, searchParams, pathname, router]);
 
   const updateFilters = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -37,18 +64,20 @@ export function PuppyGalleryClient() {
       params.set(key, value);
     }
 
+    const qs = params.toString();
     startTransition(() => {
-      router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     });
   };
 
   const clearAllFilters = () => {
+    setSearchTerm('');
     startTransition(() => {
       router.push(pathname, { scroll: false });
     });
   };
 
-  // Filtered puppies list
+  // Filtered puppies list (filters immediately against local search term)
   const filteredPuppies = useMemo(() => {
     return PUPPIES.filter((puppy) => {
       // Filter by breed
@@ -69,8 +98,8 @@ export function PuppyGalleryClient() {
       }
 
       // Search query
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
+      if (searchTerm.trim()) {
+        const query = searchTerm.toLowerCase().trim();
         const matches =
           puppy.name.toLowerCase().includes(query) ||
           puppy.breed.toLowerCase().includes(query) ||
@@ -81,16 +110,16 @@ export function PuppyGalleryClient() {
 
       return true;
     });
-  }, [selectedBreed, selectedOrigin, selectedSex, searchQuery]);
+  }, [selectedBreed, selectedOrigin, selectedSex, searchTerm]);
 
   const hasActiveFilters =
     selectedBreed !== 'All Breeds' ||
     selectedOrigin !== 'all' ||
     selectedSex !== 'all' ||
-    searchQuery.trim() !== '';
+    searchTerm.trim() !== '';
 
   return (
-    <div className="w-full">
+    <div className="mx-auto w-full max-w-[1200px] px-[5vw] box-border">
       {/* Filters Control Bar */}
       <div className="rounded-3xl border-2 border-ink bg-white p-5 sm:p-7 shadow-card mb-10">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-ink/10">
@@ -100,8 +129,8 @@ export function PuppyGalleryClient() {
             <input
               type="text"
               placeholder="Search by name, breed, or color..."
-              value={searchQuery}
-              onChange={(e) => updateFilters('q', e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full h-12 pl-11 pr-4 rounded-full border-2 border-ink bg-cream-50 text-sm font-medium text-ink focus:outline-none focus:border-caramel transition-colors"
             />
           </div>
@@ -177,8 +206,8 @@ export function PuppyGalleryClient() {
           </div>
         </div>
 
-        {/* Breed Tabs */}
-        <div className="pt-5 overflow-x-auto scrollbar-none flex items-center gap-2">
+        {/* Breed Tabs — scrolls inside the card */}
+        <div className="pt-5 flex gap-3 overflow-x-auto scrollbar-none items-center">
           {BREEDS.map((breed) => {
             const isActive = selectedBreed.toLowerCase() === breed.toLowerCase();
 
@@ -186,7 +215,7 @@ export function PuppyGalleryClient() {
               <button
                 key={breed}
                 onClick={() => updateFilters('breed', breed)}
-                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap transition-all border ${
+                className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap transition-all border flex-shrink-0 ${
                   isActive
                     ? 'bg-caramel text-white border-caramel shadow-sm'
                     : 'bg-cream-100 hover:bg-cream border-caramel/20 text-ink'
@@ -252,4 +281,3 @@ export function PuppyGalleryClient() {
     </div>
   );
 }
-

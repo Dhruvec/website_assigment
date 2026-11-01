@@ -4,10 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Menu, X, Phone, Heart } from 'lucide-react';
+import { X } from 'lucide-react';
 import { SITE_CONFIG, getWhatsAppLink } from '@/lib/site-config';
 import { PawIcon } from '@/components/ui/PawIcon';
-import { Mascot } from '@/components/ui/Mascot';
 
 const NAV_LINKS = [
   { name: 'Home', href: '/' },
@@ -25,7 +24,8 @@ export function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 15);
+      const isScrolled = window.scrollY > 24;
+      setScrolled((prev) => (prev !== isScrolled ? isScrolled : prev));
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -60,34 +60,44 @@ export function Header() {
   return (
     <>
       <header
-        className={`sticky top-0 z-40 w-full transition-all duration-300 ${
-          scrolled
-            ? 'bg-[#fde8c4]/90 backdrop-blur-md shadow-sm border-b border-caramel/15 py-3'
-            : 'bg-[#fde8c4]/80 backdrop-blur-sm border-b border-caramel/10 py-4'
-        }`}
+        className="sticky top-0 z-50 w-full"
+        style={{
+          height: 72,
+          display: 'flex',
+          alignItems: 'center',
+          backgroundColor: scrolled ? 'rgba(255,253,248,0.88)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(12px)' : 'none',
+          WebkitBackdropFilter: scrolled ? 'blur(12px)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(42,26,18,0.08)' : '1px solid transparent',
+          transition: 'background-color 0.25s, backdrop-filter 0.25s, border-bottom 0.25s',
+        }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          {/* Logo & Brand */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between w-full">
+          {/* Logo Badge + Wordmark — NO tagline, NO mascot SVG in logo area */}
           <Link
             href="/"
-            className="flex items-center gap-3 group focus:outline-none"
+            className="flex items-center gap-3 group focus:outline-none flex-shrink-0"
             aria-label={`${SITE_CONFIG.name} homepage`}
           >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white border-2 border-caramel flex items-center justify-center p-0.5 shadow-sm group-hover:rotate-6 transition-transform">
-              <Mascot pose="idle" animated={false} className="w-full h-full" />
+            {/* 44px round logo badge with 2px caramel ring */}
+            <div
+              className="rounded-full border-2 border-caramel bg-cream-100 flex items-center justify-center overflow-hidden flex-shrink-0 group-hover:scale-105 transition-transform"
+              style={{ width: 44, height: 44 }}
+            >
+              {/* Simple paw/brand mark inside the badge — not a full mascot */}
+              <PawIcon className="w-5 h-5 fill-caramel" />
             </div>
-            <div className="flex flex-col">
-              <span className="font-display font-black text-xl sm:text-2xl text-ink tracking-tight leading-none group-hover:text-caramel transition-colors">
-                {SITE_CONFIG.name}
-              </span>
-              <span className="font-accent text-sm text-caramel font-semibold tracking-wide -mt-0.5">
-                {SITE_CONFIG.tagline}
-              </span>
-            </div>
+            {/* Brand wordmark only — display serif, 1.6rem */}
+            <span
+              className="font-display font-black text-ink tracking-tight leading-none group-hover:text-caramel transition-colors"
+              style={{ fontSize: '1.6rem' }}
+            >
+              {SITE_CONFIG.name}
+            </span>
           </Link>
 
-          {/* Centered Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2" aria-label="Main Navigation">
+          {/* Centered Desktop Nav — font-medium, 1rem, gap 40px */}
+          <nav className="hidden md:flex items-center absolute left-1/2 -translate-x-1/2" style={{ gap: 40 }} aria-label="Main Navigation">
             {NAV_LINKS.map((link) => {
               const isActive =
                 link.href === '/'
@@ -98,17 +108,18 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative px-3.5 py-2 rounded-full font-medium text-sm transition-colors duration-150 flex flex-col items-center group ${
+                  className={`relative font-medium transition-colors duration-150 flex flex-col items-center pb-4 ${
                     isActive
-                      ? 'text-caramel font-bold'
-                      : 'text-ink/80 hover:text-ink font-semibold'
+                      ? 'text-caramel'
+                      : 'text-ink/75 hover:text-ink'
                   }`}
+                  style={{ fontSize: '1rem' }}
                 >
                   <span>{link.name}</span>
                   {isActive && (
                     <motion.div
                       layoutId="nav-active-paw"
-                      className="absolute -bottom-1.5 flex justify-center text-caramel"
+                      className="absolute bottom-0 flex justify-center text-caramel"
                       transition={{ type: 'spring', stiffness: 380, damping: 28 }}
                     >
                       <PawIcon className="w-3.5 h-3.5 fill-caramel" />
@@ -119,27 +130,26 @@ export function Header() {
             })}
           </nav>
 
-          {/* Right Action: WhatsApp CTA (Desktop) + Mobile Menu Trigger */}
+          {/* Right: WhatsApp pill (no icon) + Mobile Menu */}
           <div className="flex items-center gap-3">
             <a
               href={getWhatsAppLink('Hi Petite Paws! I would like to enquire about your available puppies.')}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm bg-whatsapp text-white shadow-chunky-whatsapp hover:-translate-y-0.5 hover:shadow-chunky-whatsapp-hover active:translate-y-0.5 active:shadow-chunky-whatsapp-active transition-all"
+              className="hidden md:inline-flex items-center justify-center px-5 py-2.5 rounded-full font-bold text-sm bg-whatsapp text-white transition-all duration-150 shadow-[0_4px_0_0_#124d30] hover:-translate-y-[2px] hover:shadow-[0_6px_0_0_#124d30] active:translate-y-[2px] active:shadow-[0_2px_0_0_#124d30]"
             >
-              <MessageCircle className="w-4 h-4 fill-white/20" />
-              <span>WhatsApp us</span>
+              WhatsApp us
             </a>
 
-            {/* Mobile Hamburger Menu */}
+            {/* Mobile (< 768px): "Menu" text button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-2.5 rounded-full bg-cream-100 border border-ink/15 text-ink hover:bg-cream-200 transition-colors focus-visible:ring-2 focus-visible:ring-caramel"
+              className="md:hidden px-4 py-2 rounded-full bg-cream-100 border border-ink/15 text-ink font-bold text-sm hover:bg-cream-200 transition-colors focus-visible:ring-2 focus-visible:ring-caramel"
               aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-navigation"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? 'Close' : 'Menu'}
             </button>
           </div>
         </div>
@@ -157,13 +167,21 @@ export function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
-            className="fixed inset-0 z-50 bg-[#fffdf8] flex flex-col p-6 overflow-y-auto lg:hidden"
+            className="fixed inset-0 z-50 bg-[#fffdf8] flex flex-col p-6 overflow-y-auto md:hidden"
           >
             {/* Mobile Top Header */}
             <div className="flex items-center justify-between pb-4 border-b border-ink/10">
-              <div className="flex items-center gap-2.5">
-                <Mascot pose="idle" animated={false} className="w-8 h-8" />
-                <span className="font-display font-extrabold text-xl text-ink">
+              <div className="flex items-center gap-3">
+                <div
+                  className="rounded-full border-2 border-caramel bg-cream-100 flex items-center justify-center overflow-hidden flex-shrink-0"
+                  style={{ width: 44, height: 44 }}
+                >
+                  <PawIcon className="w-5 h-5 fill-caramel" />
+                </div>
+                <span
+                  className="font-display font-black text-ink tracking-tight leading-none"
+                  style={{ fontSize: '1.6rem' }}
+                >
                   {SITE_CONFIG.name}
                 </span>
               </div>
@@ -176,14 +194,11 @@ export function Header() {
               </button>
             </div>
 
-            {/* Cheerful Greeting Header */}
+            {/* Greeting */}
             <div className="pt-6 pb-4">
-              <span className="font-accent text-2xl text-caramel block -rotate-1 font-bold">
+              <span className="font-accent text-3xl text-caramel block -rotate-1 font-bold">
                 where to, friend?
               </span>
-              <p className="text-xs text-ink-muted mt-0.5">
-                Explore our teacup companions & boutique showroom in {SITE_CONFIG.city}
-              </p>
             </div>
 
             {/* Navigation Links */}
@@ -216,30 +231,16 @@ export function Header() {
               })}
             </nav>
 
-            {/* Mobile CTAs & Phone */}
+            {/* Mobile CTAs */}
             <div className="pt-6 border-t border-ink/10 flex flex-col gap-3">
               <a
                 href={getWhatsAppLink('Hi! I am enquiring from your website.')}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full h-14 rounded-full bg-whatsapp text-white font-bold flex items-center justify-center gap-2 shadow-chunky-whatsapp"
+                className="w-full h-14 rounded-full bg-whatsapp text-white font-bold flex items-center justify-center shadow-[0_4px_0_0_#124d30] active:translate-y-[2px]"
               >
-                <MessageCircle className="w-5 h-5" />
-                <span>WhatsApp concierge</span>
+                WhatsApp us
               </a>
-
-              <a
-                href={`tel:${SITE_CONFIG.phoneDigits}`}
-                className="w-full h-12 rounded-full border-2 border-ink text-ink font-bold flex items-center justify-center gap-2 hover:bg-cream-100 transition-colors"
-              >
-                <Phone className="w-4 h-4 text-caramel" />
-                <span>Call {SITE_CONFIG.phone}</span>
-              </a>
-
-              <div className="flex items-center justify-center gap-1.5 text-xs text-ink-muted pt-2">
-                <Heart className="w-3.5 h-3.5 fill-caramel text-caramel" />
-                <span>{SITE_CONFIG.tagline} • {SITE_CONFIG.city}</span>
-              </div>
             </div>
           </motion.div>
         )}
@@ -247,4 +248,3 @@ export function Header() {
     </>
   );
 }
-
